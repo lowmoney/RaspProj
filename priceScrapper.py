@@ -1,37 +1,56 @@
 import requests
 from bs4 import BeautifulSoup
-import yagmail
+from emailer import sendEmail
 
-#yag = yagmail.SMTP('hendryratnam07@gmail.com',oauth2_file='~/oauth2_creds.json')
-url = 'https://www.newegg.com/p/pl?d=gpu'
+def neweggParser(search):
+    url = 'https://www.newegg.com/p/pl?d='+search
 
-r = requests.get(url).text
-soup = BeautifulSoup(r,'html.parser')
+    # Send the request to the url and convert to text
+    # Make the soup bs4 soup object
+    r = requests.get(url).text
+    soup = BeautifulSoup(r,'html.parser')
 
-# New egg parsing
-items = soup.find_all('div','item-container')
-itemAction = soup.find_all('div','item-action')
-neweggItemNames = []
-neweggItemPrices = []
+    # Find all the items located in item-container css class
+    items = soup.find_all('div','item-container')
+    itemAction = soup.find_all('div','item-action')
+    itemLinks = soup.find_all('a','item-img')
 
-for item in items:
-    #print(item.find('img')['title'])
-    neweggItemNames.append(str(item.find('img')['title']))
+    # Some vars to hold prcies and names
+    # Add links later
+    neweggItemNames = []
+    neweggItemPrices = []
+    neweggLinks = []
 
-for item in itemAction:
-    neweggItemPrices.append(item.ul.find('li','price-current').strong.text.strip())
+    # Go through all items and find the title
+    for item in items:
+        #print(item.find('img')['title'])
+        neweggItemNames.append(str(item.find('img')['title']))
 
-wow = ""
+    # Go through all class itemAction to find prices
+    for item in itemAction:
+        neweggItemPrices.append(item.ul.find('li','price-current').strong.text.strip())
 
-contents = '''
+    for link in itemLinks:
+        neweggLinks.append(link['href'])
 
+    # Debug stuff
+    wow = ""
 
-'''
-#yag.send(to='hendryratnam@gmail.com', contents=neweggItemNames.pop())
-while len(neweggItemNames) and len(neweggItemPrices) is not 0:
-    wow = neweggItemNames.pop()
-    print(wow)
-    wow = neweggItemPrices.pop()
-    print(wow)
-    print('')
+    # while len(neweggItemNames) and len(neweggItemPrices) is not 0:
+    #     wow = neweggItemNames.pop()
+    #     print(wow)
+    #     wow = neweggItemPrices.pop()
+    #     print(wow)
+    #     print('')
+    return contentFormatter(neweggItemNames,neweggItemPrices,neweggLinks)
 
+def contentFormatter(name,price,links=None):
+    content = []
+    if links is None:
+        while len(name) and len(price) is not 0:
+            content.append(str('<p>' + name.pop() + ' For ' + price.pop()) + '</p>')
+    else:
+        while len(name) and len(price) is not 0:
+            content.append(str('<p><a href='+links.pop()+'>' + name.pop() + ' For ' + price.pop() + '</a></p>'))
+
+    return content

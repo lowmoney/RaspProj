@@ -6,7 +6,7 @@ from emailer import sendEmail
 def runScrapper():
     sendEmail(neweggParser('gpu'))
 
-schedule.every(6).hours.do(runScrapper)
+schedule.every(6).seconds.do(runScrapper)
 
 while True:
     schedule.run_pending()

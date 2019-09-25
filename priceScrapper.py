@@ -42,6 +42,7 @@ def neweggParser(search):
     #     wow = neweggItemPrices.pop()
     #     print(wow)
     #     print('')
+    print("finished scraping")
     return contentFormatter(neweggItemNames,neweggItemPrices,neweggLinks)
 
 def contentFormatter(name,price,links=None):
